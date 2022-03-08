@@ -144,6 +144,8 @@ title(main = "Predicción para la serie alta de trabajadores",
 
 dev.off()
 
+#bye bye
+
 #nos desconectamos de la bdd
 dbDisconnect(MyDataBase)
 
