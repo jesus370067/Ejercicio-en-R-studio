@@ -1,6 +1,7 @@
 
 #librerias a usar
 
+library(DBI)
 library(RMySQL)
 library(dplyr)
 library(TSA)
@@ -17,7 +18,11 @@ MyDataBase <- dbConnect(
 dbListTables(MyDataBase) # muestra las tablas de la base de datos
 dbListFields(MyDataBase, 'titular')#ver campos de la tabla titular
 
-
+#extrayendo tambien la tabla desde la nube
+getwd()
+setwd("/cloud/project")
+DataDB<-read.csv("titular1.csv")
+View(DataDB)
 
 #Primero queremos saber cuantos trabajadores activos se encuentran registados 
 #en la clinica FB
@@ -30,7 +35,7 @@ ta<- DataDB %>% filter(TIPO_DE_DIRECTO== "TRABAJADOR") %>% group_by(GENERO) %>% 
 
 #vemos grafica de barras
 
-barplot(height = ta$total, names = ta$GENERO, col = c("red", "green"), ylab = "Genero", xlab = "Frecuencia", main = "Relación trabajadores derechohabientes", sub= "CMF FB"
+barplot(height = ta$total, names = ta$GENERO, col = c("red", "green"), ylab = "Genero", xlab = "Frecuencia", main = "Relaci?n trabajadores derechohabientes", sub= "CMF FB"
        ,horiz = TRUE)
 
 
@@ -39,7 +44,14 @@ barplot(height = ta$total, names = ta$GENERO, col = c("red", "green"), ylab = "G
 #se dieron de alta ante el issste los trabajadores
 
 alta <- dbGetQuery(MyDataBase, "select ALTA1, count(ALTA1) AS ACTIVOS from titular GROUP BY ALTA1 ORDER BY ALTA1")
-View(alta)
+
+# otra forma de hacer el agrupamiento por medio del archivo titular1.csv
+
+alta <- DataDB %>% select(ALTA1)  %>% group_by(ALTA1) %>% summarise(ACTIVOS= n())  
+
+
+lapply(alta,class)
+
 
 
 DB<-alta %>% filter(ALTA1 >= 2000/01/01 ) 
@@ -125,20 +137,8 @@ pr <- predict(best.fit, 60)$pred
 ts.plot(cbind(window(alta, start = 2000),
               exp(pr)), col = c("blue", "red"), xlab = "")
 title(main = "PredicciÃ³n para la serie alta de trabajadores",
-      xlab = "año",
+      xlab = "a?o",
       ylab = "alta de trabajadores")
-
-
-
-
-
-#Ahora quiero ver cuantos derechohabientes pensionados y trabajadores se tienen por colonia
-dbListFields(MyDataBase, 'titular')#ver campos de la tabla titular
-DataDB1 <- dbGetQuery(MyDataBase, "select COLONIA from titular where CAP='NO' AND ESTATUS = 'VIGENTE' AND TIPO_DE_DIRECTO")
-
-TOTAL <- DataDB1 %>% group_by(COLONIA) %>% count(COLONIA,sort=TRUE)
-View(TOTAL)
-#DataDB1 <- dbGetQuery(MyDataBase, "select COLONIA, count(COLONIA) as TOTAL from titular where CAP = 'NO' group by COLONIA order by total desc ")
 
 
 dev.off()
