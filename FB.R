@@ -8,6 +8,7 @@ library(ggplot2)
 library(lubridate)
 
 #Conexion con la base se datos 
+
 MyDataBase <- dbConnect(
   drv = RMySQL::MySQL(),
   dbname = "ftes_brot",
